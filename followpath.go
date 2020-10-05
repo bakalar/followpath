@@ -73,7 +73,7 @@ func FollowPath(lines []string, start CharacterLocation, end CharacterLocation) 
 	var direction pathDirection = none
 	currentLocation := start
 	path := []CharacterLocation{CharacterLocation{currentLocation.lineIndex, currentLocation.columnIndex}}
-	repeatedLocation := false
+	var previousPathIndexForCurrentLocation *int = nil
 	for {
 		if currentLocation == end {
 			break
@@ -83,18 +83,36 @@ func FollowPath(lines []string, start CharacterLocation, end CharacterLocation) 
 		// next location is contained in the last element
 		nextLocation := path[len(path)-1]
 
-		nextLocationIsRepeated := contains(path[:len(path)-1], nextLocation)
-		if repeatedLocation && nextLocationIsRepeated {
+		previousPathIndexForNextLocation := firstPathIndex(path[:len(path)-1], nextLocation)
+		if adjacent(previousPathIndexForCurrentLocation, previousPathIndexForNextLocation) {
 			panic("inifinite path detected")
 		}
-		repeatedLocation = nextLocationIsRepeated
+		previousPathIndexForCurrentLocation = previousPathIndexForNextLocation
 
 		hDiff := nextLocation.columnIndex - currentLocation.columnIndex
 		vDiff := nextLocation.lineIndex - currentLocation.lineIndex
-		direction = nextDirection(hDiff, vDiff)
+		direction = nextDirection(vDiff, hDiff)
 		currentLocation = nextLocation
 	}
 	return path
+}
+
+func firstPathIndex(path []CharacterLocation, location CharacterLocation) *int {
+	for index, location1 := range path {
+		if location1 == location {
+			return &index
+		}
+	}
+	return nil
+}
+
+// path indexes are next to each other, creating a path
+func adjacent(index1 *int, index2 *int) bool {
+	if index1 != nil && index2 != nil {
+		diff := *index1 - *index2
+		return diff == 1 || diff == -1
+	}
+	return false
 }
 
 // PathAsLetters converts a path to a list of letters
@@ -141,7 +159,7 @@ func min(x, y int) int {
 }
 
 // convert vertical and horizontal index differences into direction
-func nextDirection(hDiff int, vDiff int) pathDirection {
+func nextDirection(vDiff int, hDiff int) pathDirection {
 	if hDiff > 0 {
 		return right
 	} else if hDiff < 0 {
@@ -176,16 +194,15 @@ func diffs(direction pathDirection) (int, int) {
 		hDiff = 0
 		vDiff = 0
 	}
-	return hDiff, vDiff
+	return vDiff, hDiff
 }
 
 // travel one step along the path
 func onePathStep(path []CharacterLocation, lines []string, direction pathDirection, baseLocation CharacterLocation) []CharacterLocation {
 	baseCharacter := lines[baseLocation.lineIndex][baseLocation.columnIndex]
-	baseCharacterIsLetter := isLetter(rune(baseCharacter))
 	baseCharacterIsVerticalConnection := baseCharacter == verticalConnectionCharacter
 	baseCharacterIsHorizontalConnection := baseCharacter == horizontalConnectionCharacter
-	hDiff, vDiff := diffs(direction)
+	vDiff, hDiff := diffs(direction)
 	preferredNextLocation := CharacterLocation{baseLocation.lineIndex + vDiff, baseLocation.columnIndex + hDiff}
 
 	// try all directions
@@ -219,20 +236,7 @@ func onePathStep(path []CharacterLocation, lines []string, direction pathDirecti
 				// invalid direction
 				continue
 			}
-			if baseCharacterIsLetter {
-				if lineIndex == baseLocation.lineIndex {
-					// vertical connection is not allowed here
-					if currentCharacter != verticalConnectionCharacter {
-						validLocations = append(validLocations, currentLocation)
-					}
-				}
-				if columnIndex == baseLocation.columnIndex {
-					// horizontal connection is not allowed here
-					if currentCharacter != horizontalConnectionCharacter {
-						validLocations = append(validLocations, currentLocation)
-					}
-				}
-			} else if baseCharacterIsVerticalConnection {
+			if baseCharacterIsVerticalConnection {
 				// only up and down directions are allowed
 				if columnIndex == baseLocation.columnIndex {
 					lineIndex2 := lineIndex
@@ -281,7 +285,18 @@ func onePathStep(path []CharacterLocation, lines []string, direction pathDirecti
 					validLocations = append(validLocations, currentLocation)
 				}
 			} else {
-				validLocations = append(validLocations, currentLocation)
+				if lineIndex == baseLocation.lineIndex {
+					// vertical connection is not allowed here
+					if currentCharacter != verticalConnectionCharacter {
+						validLocations = append(validLocations, currentLocation)
+					}
+				}
+				if columnIndex == baseLocation.columnIndex {
+					// horizontal connection is not allowed here
+					if currentCharacter != horizontalConnectionCharacter {
+						validLocations = append(validLocations, currentLocation)
+					}
+				}
 			}
 		}
 	}

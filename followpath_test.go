@@ -17,13 +17,26 @@ func TestMap3(t *testing.T) {
 	testMapFile(t, "map3.txt", "BEEFCAKE", "@---+B||E--+|E|+--F--+|C|||A--|-----K|||+--E--Ex")
 }
 
-func TestMap4(t *testing.T) {
+func TestMapInfiniteLoop(t *testing.T) {
 	defer func() {
 		if r := recover(); r == nil {
 			t.Errorf("The code did not panic")
 		}
 	}()
-	testMapFile(t, "map4.txt", "", "")
+	testMapFile(t, "map_infinite_loop.txt", "", "")
+}
+
+func TestMapNoEnd(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("The code did not panic")
+		}
+	}()
+	testMapFile(t, "map_no_end.txt", "", "")
+}
+
+func TestMapDoubleCrossing(t *testing.T) {
+	testMapFile(t, "map_double_crossing.txt", "BCDEFGH", "@---+B||C--+||D|++|E+----+|||F--|-----G||||+--DE---H-x")
 }
 
 func testMapFile(t *testing.T, filename string, expectedLetters string, expectedCharacters string) {

@@ -33,7 +33,7 @@ type CharacterLocation struct {
 	columnIndex int
 }
 
-// MapFromFileAsLines loads a map from file and returns it as a list of lines
+// MapFromFileAsLines loads a map from a file and returns it as a list of lines
 func MapFromFileAsLines(file *os.File) []string {
 	sc := bufio.NewScanner(file)
 
@@ -133,6 +133,7 @@ func min(x, y int) int {
 	return x
 }
 
+// convert vertical and horizontal index differences into direction
 func nextDirection(hDiff int, vDiff int) pathDirection {
 	if hDiff > 0 {
 		return right
@@ -147,6 +148,7 @@ func nextDirection(hDiff int, vDiff int) pathDirection {
 	}
 }
 
+// convert direction to vertical and horizontal index differences
 func diffs(direction pathDirection) (int, int) {
 	var hDiff int
 	var vDiff int
@@ -170,6 +172,7 @@ func diffs(direction pathDirection) (int, int) {
 	return hDiff, vDiff
 }
 
+// travel one step along the path
 func onePathStep(path []CharacterLocation, lines []string, direction pathDirection, baseLocation CharacterLocation) []CharacterLocation {
 	baseCharacter := lines[baseLocation.lineIndex][baseLocation.columnIndex]
 	baseCharacterIsLetter := isLetter(rune(baseCharacter))
@@ -289,7 +292,7 @@ func onePathStep(path []CharacterLocation, lines []string, direction pathDirecti
 	return append(path, validLocations[0])
 }
 
-// Is location containt in this path?
+// Is location contained in this path?
 func contains(path []CharacterLocation, location CharacterLocation) bool {
 	for _, location1 := range path {
 		if location1 == location {

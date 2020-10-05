@@ -68,7 +68,7 @@ func GetLocation(lines []string, character byte) CharacterLocation {
 	panic("character " + string(character) + " not found")
 }
 
-// FollowPath follows a path on a map from beggining to end and returns it as a list of locations
+// FollowPath follows a path on a map from beginning to end and returns it as a list of locations
 func FollowPath(lines []string, start CharacterLocation, end CharacterLocation) []CharacterLocation {
 	var direction pathDirection = none
 	currentLocation := start

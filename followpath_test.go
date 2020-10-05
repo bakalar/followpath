@@ -17,6 +17,15 @@ func TestMap3(t *testing.T) {
 	testMapFile(t, "map3.txt", "BEEFCAKE", "@---+B||E--+|E|+--F--+|C|||A--|-----K|||+--E--Ex")
 }
 
+func TestMap4(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("The code did not panic")
+		}
+	}()
+	testMapFile(t, "map4.txt", "", "")
+}
+
 func testMapFile(t *testing.T, filename string, expectedLetters string, expectedCharacters string) {
 	lines, path := followPathFromFile(t, filename)
 	if PathAsLetters(lines, path) != expectedLetters {

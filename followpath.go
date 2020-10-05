@@ -73,6 +73,7 @@ func FollowPath(lines []string, start CharacterLocation, end CharacterLocation) 
 	var direction pathDirection = none
 	currentLocation := start
 	path := []CharacterLocation{CharacterLocation{currentLocation.lineIndex, currentLocation.columnIndex}}
+	repeatedLocation := false
 	for {
 		if currentLocation == end {
 			break
@@ -81,6 +82,12 @@ func FollowPath(lines []string, start CharacterLocation, end CharacterLocation) 
 
 		// next location is contained in the last element
 		nextLocation := path[len(path)-1]
+
+		nextLocationIsRepeated := contains(path[:len(path)-1], nextLocation)
+		if repeatedLocation && nextLocationIsRepeated {
+			panic("inifinite path detected")
+		}
+		repeatedLocation = nextLocationIsRepeated
 
 		hDiff := nextLocation.columnIndex - currentLocation.columnIndex
 		vDiff := nextLocation.lineIndex - currentLocation.lineIndex
@@ -199,7 +206,7 @@ func onePathStep(path []CharacterLocation, lines []string, direction pathDirecti
 
 		for columnIndex := columnIndexStart; columnIndex <= columnIndexEnd; columnIndex++ {
 			if lineIndex == baseLocation.lineIndex-vDiff && columnIndex == baseLocation.columnIndex-hDiff {
-				// can't go to backwards (to previous location)
+				// can't go backwards (to previous location)
 				continue
 			}
 			currentLocation := CharacterLocation{lineIndex, columnIndex}
